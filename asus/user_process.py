@@ -24,6 +24,9 @@ class UserPreProcess():
         with open(self.__file_path,'r') as f:
             for line in f:
                 line = line.strip("\n")
+                if(line.startswith('./')):
+                    parent = str(Path(self.__file_path).parent) + os.sep
+                    line = line.replace('./',parent)
                 image_full_path = line
                 label_full_path = str(Path(image_full_path).with_suffix('.txt'))
                 self.__image_full_list_path.append(image_full_path)
@@ -49,7 +52,8 @@ class UserPreProcess():
 
             if(self.__debug):
                 print("Handle Image \nsrc:{} \ntarget:{}".format(source,target),flush=True)
-            os.symlink(source, target)
+            if(not os.path.exists(target)):
+                os.symlink(source, target)
 
     def __handle_label(self,src_list):
         sa, sb = os.sep + 'images' + os.sep, os.sep + 'labels' + os.sep
@@ -63,7 +67,10 @@ class UserPreProcess():
 
             if(self.__debug):
                 print("Handle Label \nsrc:{} \ntarget:{}".format(source,target),flush=True)
-            shutil.copy(source,target)
+            if(not os.path.exists(source)):
+                print("Warning {} not found".format(source),flush=True)
+            else:
+                shutil.copy(source,target)
 
     def __write_result(self):
         if(self.__debug):

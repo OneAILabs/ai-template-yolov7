@@ -90,13 +90,14 @@ class DatasetHandler:
             self.__cvat_test_bucket['cvat_test'] = self.__dataset_path
 
         if(self.__user_train_file != 'none'):
-            self.__user_train_bucket['user_train'] = str(Path(self.__user_train_file).parent)
+            # To get root directory,ex:/dataset
+            self.__user_train_bucket['user_train'] = os.sep+self.__user_train_file.split(os.sep)[1]
 
         if(self.__user_val_file != 'none'):
-            self.__user_val_bucket['user_val'] = str(Path(self.__user_train_file).parent)
+            self.__user_val_bucket['user_val'] = os.sep+self.__user_val_file.split(os.sep)[1]
 
         if(self.__user_test_file != 'none'):
-            self.__user_test_bucket['user_test'] = str(Path(self.__user_test_file).parent)
+            self.__user_test_bucket['user_test'] = os.sep+self.__user_test_file.split(os.sep)[1]
 
         if(self.__debug):
             print("CVAT Train Bucket:{}".format(self.__cvat_train_bucket))

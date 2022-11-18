@@ -430,6 +430,6 @@ class Train():
 
 
 if __name__ == '__main__':
-    print("[AIM-Train] start yolov7")
+    print("[AIM-Train] start yolov7",flush=True)
     train_handler = Train()
     train_handler.train()

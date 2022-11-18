@@ -86,7 +86,8 @@ class CVATPreProcess():
         
             if(self.__debug):
                 print("Handle Image \nsrc:{} \ntarget:{}".format(source,target),flush=True)
-            os.symlink(source, target)
+            if(not os.path.exists(target)):
+                os.symlink(source, target)
         
     def __handle_label(self,src_list):
         sa, sb = os.sep + 'images' + os.sep, os.sep + 'labels' + os.sep
@@ -101,7 +102,10 @@ class CVATPreProcess():
 
             if(self.__debug):
                 print("Handle Label \nsrc:{} \ntarget:{}".format(source,target),flush=True)
-            shutil.copy(source,target)
+            if(os.path.exists(source)):
+                shutil.copy(source,target)
+            else:
+                print("Warning {} not found".format(source),flush=True)
 
     def __write_result(self):
         if(self.__debug):

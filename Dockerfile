@@ -28,7 +28,8 @@ RUN pip install \
     mlflow==1.24.0 \
     boto3==1.21.0 \
     AIMakerMonitor==1.0.5 \
-    supervisor==4.1.0
+    supervisor==4.1.0 \
+    jupyterlab==3.4.7
     
 #supervisor
 COPY /supervisor/supervisord.conf /etc/supervisor/supervisord.conf
@@ -47,5 +48,4 @@ RUN chmod -R 777 /datasetTemp
 RUN mkdir -p /temp
 RUN chmod -R 777 /temp
 WORKDIR /yolov7
-
 CMD ["entrypoint.sh"]
