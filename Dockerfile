@@ -30,7 +30,12 @@ RUN pip install \
     AIMakerMonitor==1.0.5 \
     supervisor==4.1.0 \
     jupyterlab==3.4.7
-    
+
+#Jupyter
+ARG ASUS_CLOUDINFRA_DIR=/opt/ASUSCloudInfra
+ENV JUPYTER_CONFIG_DIR=${ASUS_CLOUDINFRA_DIR}
+COPY /supervisor/jupyter_lab_config.py ${JUPYTER_CONFIG_DIR}/
+
 #supervisor
 COPY /supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY /supervisor/entrypoint.sh /usr/local/bin/

@@ -1,4 +1,10 @@
 #!/bin/bash
 set -e
 echo $PASSWORD
-jupyter notebook --notebook-dir=/yolov7 --ip='*' --port=8888 --allow-root --no-browser --NotebookApp.password="$(echo $PASSWORD | python -c 'from notebook.auth import passwd;print(passwd(input()))')"
+
+jupyter-lab \
+  --allow-root \
+  --no-browser \
+  --ip 0.0.0.0 --port 8888 \
+  --ServerApp.root_dir="/yolov7" \
+  --config ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
