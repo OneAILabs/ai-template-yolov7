@@ -34,19 +34,22 @@ RUN pip install \
 #Jupyter
 ARG ASUS_CLOUDINFRA_DIR=/opt/ASUSCloudInfra
 ENV JUPYTER_CONFIG_DIR=${ASUS_CLOUDINFRA_DIR}
-COPY /supervisor/jupyter_lab_config.py ${JUPYTER_CONFIG_DIR}/
+COPY ./supervisor/jupyter_lab_config.py ${JUPYTER_CONFIG_DIR}/
 
 #supervisor
-COPY /supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-COPY /supervisor/entrypoint.sh /usr/local/bin/
-COPY /supervisor/start_jupyter.sh /usr/local/bin/
+COPY ./supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+COPY ./supervisor/entrypoint.sh /usr/local/bin/
+COPY ./supervisor/start_jupyter.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start_jupyter.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /yolov7
-COPY yolov7 /yolov7
+COPY ./yolov7 /yolov7
 RUN pip install -r /yolov7/requirements.txt
-COPY /asus/* /yolov7/
+COPY ./asus/* /yolov7/
+
+#jupyter-example
+COPY ./jupyter-example /jupyter-example/
 
 RUN mkdir -p /datasetTemp
 RUN chmod -R 777 /datasetTemp

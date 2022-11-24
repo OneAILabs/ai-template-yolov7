@@ -21,7 +21,7 @@ def detect():
     print("yolov7()", flush=True)
     body = request.get_json()
     if 'image' not in body:
-        return jsonify({'error': 'no file'}), 400
+        return jsonify({"status": "error",'results': 'no file'}), 400
     thresh = 0.5
     if "thresh" in body:
         thresh = body["thresh"]
