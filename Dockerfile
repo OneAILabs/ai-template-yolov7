@@ -18,7 +18,7 @@ RUN wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-w6_t
 RUN wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6_training.pt
 Run wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-d6_training.pt
 Run wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-e6e_training.pt
-
+Run wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7-tiny.pt
 # pip install required packages
 RUN pip install \
     seaborn \

@@ -99,6 +99,13 @@ class Train():
             self.__src_weight = os.path.join(YOLO_WEIGHT_BASEPATH,"yolov7_training.pt")
             self.__train_file_name = "train.py"
 
+        elif(self.__model_type == "yolov7-tiny"):
+            self.__src_cfg = os.path.join(YOLO_CFG_BASEPATH,"yolov7-tiny.yaml")
+            self.__src_data = os.path.join(YOLO_DATA_BASEPATH,DEFAULT_DATA_NAME)
+            self.__src_hyp = os.path.join(YOLO_DATA_BASEPATH,"hyp.scratch.tiny.yaml")
+            self.__src_weight = os.path.join(YOLO_WEIGHT_BASEPATH,"yolov7-tiny.pt")
+            self.__train_file_name = "train.py"
+
         elif(self.__model_type == "yolov7-x"):
             self.__src_cfg = os.path.join(YOLO_CFG_BASEPATH,"yolov7x.yaml")
             self.__src_data = os.path.join(YOLO_DATA_BASEPATH,DEFAULT_DATA_NAME)
