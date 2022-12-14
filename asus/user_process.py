@@ -2,7 +2,16 @@
 import os
 from pathlib import Path
 import shutil
-
+from os import walk
+import sys
+import copy
+DATA_YAML = os.environ.get("DATA_YAML")
+TRAIN_FILE_TYPE = "train"
+VALIDATE_FILE_TYPE = "val"
+TEST_FILE_TYPE = "test"
+TRAIN_FILE_NAME = "train.txt"
+VALIDATE_FILE_NAME = "val.txt"
+TEST_FILE_NAME = "test.txt"
 class UserPreProcess():
     def __init__(self):
         self.__debug = None
@@ -14,9 +23,55 @@ class UserPreProcess():
         self.__file_type = None
         self.__file_path = None
         self.__target_base_path = None
+        self.__curent_dir = None
+        self.__target_dir = None
         self.__target_list_path = []
         self.__image_full_list_path = []
         self.__label_full_list_path = []
+
+
+    def __handel_yaml(self):
+        self.__curent_dir = os.getcwd()
+        if(os.path.exists(DATA_YAML)):
+            self.__target_dir = str(Path(DATA_YAML).parents[0])
+        else:
+            print("DATA_YAML not found")
+            sys.exit(1)
+        path_lists = copy.deepcopy(self.__file_path)
+        for path_data in path_lists if isinstance(path_lists, list) else [path_lists]:
+            os.chdir(self.__target_dir)
+            self.__file_path = os.path.abspath(path_data)
+            p = Path(self.__file_path)
+            os.chdir(self.__curent_dir)
+            if(self.__debug):
+                print("handel_yaml:current_path:{},self.__file_path={},path_data={}".format(os.getcwd(),self.__file_path,path_data),flush=True)
+            if p.is_dir():
+                self.__generate_file(p)
+            self.__read_file()
+            self.__handle_data()
+            self.__write_result()
+
+    def __generate_file(self,directory):
+        if(self.__file_type == TRAIN_FILE_TYPE):
+            path = os.path.join(self.__target_base_path,TRAIN_FILE_NAME)
+        elif(self.__file_type == VALIDATE_FILE_TYPE):
+            path = os.path.join(self.__target_base_path,VALIDATE_FILE_NAME)
+        elif(self.__file_type == TEST_FILE_TYPE):
+            path = os.path.join(self.__target_base_path,TEST_FILE_NAME)
+        else:
+            print("Error: Unknown file type:{}".format(self.__file_type))
+            sys.exit(1)
+
+        if not(os.path.exists(self.__target_base_path)):
+            Path(self.__target_base_path).mkdir(parents=True, exist_ok=True)
+
+        with open(path,'w') as f:
+            for root,dirs, files in os.walk(directory):
+                for file in files:
+                    fullpath = os.path.join(root, file)
+                    if(str(Path(fullpath).suffix)!='.txt'):
+                        f.writelines(fullpath+'\n')
+        self.__file_path = path
 
     def __read_file(self):
         self.__image_full_list_path = []
@@ -24,6 +79,8 @@ class UserPreProcess():
         with open(self.__file_path,'r') as f:
             for line in f:
                 line = line.strip("\n")
+                line = line.rstrip()
+                line = line.lstrip()
                 if(line.startswith('./')):
                     parent = str(Path(self.__file_path).parent) + os.sep
                     line = line.replace('./',parent)
@@ -70,14 +127,17 @@ class UserPreProcess():
             if(not os.path.exists(source)):
                 print("Warning {} not found".format(source),flush=True)
             else:
-                shutil.copy(source,target)
+                if(not os.path.exists(target)):
+                    shutil.copy(source,target)
 
     def __write_result(self):
         if(self.__debug):
-            print("Write Result:{}".format(self.__write_path))
+            print("Write Path:{}".format(self.__write_path))
+            print("Write Result:{}".format(self.__target_list_path))
         with open(self.__write_path,'a') as f:
             for taget in self.__target_list_path:
                 f.write(taget+'\n')
+        self.__target_list_path = []
 
     def set_info(self,info,write_path,dataset_path,debug):
         self.__debug = debug
@@ -105,7 +165,5 @@ class UserPreProcess():
 
 
     def process(self):
-        self.__read_file()
-        self.__handle_data()
-        self.__write_result()
+        self.__handel_yaml()
 

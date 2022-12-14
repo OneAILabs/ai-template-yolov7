@@ -2,6 +2,7 @@ import os
 import random
 from pathlib import Path
 import re
+import yaml
 from cvat_process import CVATPreProcess
 from user_process import UserPreProcess
 TRAIN_BUCKET_KEYWORD = "train_dataset"
@@ -43,6 +44,7 @@ class DatasetHandler:
         self.__cvat_val_task_id = self.__envlist.get('cvat_val_task_id','none')
         self.__cvat_test_task_id = self.__envlist.get('cvat_test_task_id','none')
         self.__dataset_path = self.__envlist.get('dataset','/dataset')
+        self.__user_data_path = self.__envlist.get('data_yaml','default')
 
         self.__cvat_train_bucket = dict()
         self.__cvat_val_bucket = dict()
@@ -52,9 +54,9 @@ class DatasetHandler:
         self.__user_val_bucket = dict()
         self.__user_test_bucket = dict()
 
-        self.__user_train_file = self.__envlist.get('train_file','none')
-        self.__user_val_file = self.__envlist.get('val_file','none')
-        self.__user_test_file = self.__envlist.get('test_file','none')
+        self.__user_train_file = 'none'
+        self.__user_val_file = 'none'
+        self.__user_test_file = 'none'
 
         self.__train_info = []
         self.__valid_info = []
@@ -89,16 +91,7 @@ class DatasetHandler:
             self.__cvat_test_task_id = self.__cvat_test_task_id.split(',')
             self.__cvat_test_bucket['cvat_test'] = self.__dataset_path
 
-        if(self.__user_train_file != 'none'):
-            # To get root directory,ex:/dataset
-            self.__user_train_bucket['user_train'] = os.sep+self.__user_train_file.split(os.sep)[1]
-
-        if(self.__user_val_file != 'none'):
-            self.__user_val_bucket['user_val'] = os.sep+self.__user_val_file.split(os.sep)[1]
-
-        if(self.__user_test_file != 'none'):
-            self.__user_test_bucket['user_test'] = os.sep+self.__user_test_file.split(os.sep)[1]
-
+        self.__handle_user_buckets(self.__user_data_path)
         if(self.__debug):
             print("CVAT Train Bucket:{}".format(self.__cvat_train_bucket))
             print("CVAT Valid Bucket:{}".format(self.__cvat_val_bucket))
@@ -106,7 +99,25 @@ class DatasetHandler:
             print("USER Train Bucket:{}".format(self.__user_train_bucket))
             print("USER Valid Bucket:{}".format(self.__user_val_bucket))
             print("USER Test Bucket:{}".format(self.__user_test_bucket))
-                
+
+    def __handle_user_buckets(self,path):
+        if(os.path.exists(path)):
+            temp_bucket = os.sep+path.split(os.sep)[1]
+            with open(path, 'r') as stream:
+                try:
+                    loaded = yaml.load(stream,Loader=yaml.SafeLoader)
+                except yaml.YAMLError as exc:
+                    print(exc)
+            if loaded.get("train") is not None:
+                self.__user_train_file = loaded.get("train")
+                self.__user_train_bucket['user_train'] = temp_bucket
+            if loaded.get("test") is not None:
+                self.__user_test_file = loaded.get("test")
+                self.__user_test_bucket['user_test'] = temp_bucket
+            if loaded.get("val") is not None:
+                self.__user_val_file = loaded.get("val")
+                self.__user_val_bucket['user_val']  = temp_bucket
+
 
     def __set_cvat_info(self,file_type,bucket_path,bucket_env):
         if(file_type == TRAIN_FILE_TYPE):
@@ -145,13 +156,13 @@ class DatasetHandler:
             file_path = self.__user_test_file
         else:
             return None
-        if(os.path.exists(file_path)):
+        if(file_path != 'none'):
             data = {
                     "source_type":USER_DATASET_TYPE,
                     "bucket_env":bucket_env,
                     "bucket_path":bucket_path,
                     "file_type": file_type,
-                    "file_path": str(file_path)
+                    "file_path": file_path
                     }
             scan_result.append(data)
             return scan_result

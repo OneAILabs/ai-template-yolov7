@@ -103,16 +103,19 @@ class CVATPreProcess():
             if(self.__debug):
                 print("Handle Label \nsrc:{} \ntarget:{}".format(source,target),flush=True)
             if(os.path.exists(source)):
-                shutil.copy(source,target)
+                if(not os.path.exists(target)):
+                    shutil.copy(source,target)
             else:
                 print("Warning {} not found".format(source),flush=True)
 
     def __write_result(self):
         if(self.__debug):
-            print("Write Result:{}".format(self.__write_path))
+            print("Write Path:{}".format(self.__write_path))
+            print("Write Result:{}".format(self.__target_list_path))
         with open(self.__write_path,'a') as f:
             for taget in self.__target_list_path:
                 f.write(taget+'\n')
+        self.__target_list_path = []
 
 
     def set_info(self,info,write_path,dataset_path,debug):
