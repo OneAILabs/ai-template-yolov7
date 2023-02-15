@@ -1,6 +1,7 @@
 import os
 import hubconf
 import json
+from asus_utils import support_mlflow
 from AIMakerMonitor import counter_inc, gauge_set, api_count_inc
 class ModelHandler:
     def __init__(self):
@@ -11,9 +12,14 @@ class ModelHandler:
             self.__envlist[key.strip().lower()] = value.strip()
         # end-of-for
         self.__debug = self.__to_bool(self.__envlist.get('debug', 'true'))
-
         self.__model_type = self.__envlist.get('model_type','yolov7')
-        self.__yolo_model_basepath = os.path.join('/model/',self.__model_type,'weights')
+        if(support_mlflow()):
+            print("Using V4 Inference")
+            self.__yolo_model_basepath = os.path.join('/model/','data',self.__model_type,'weights')
+        else:
+            print("Using V3 Inference")
+            self.__yolo_model_basepath = os.path.join('/model/',self.__model_type,'weights')
+
         self.__user_weight = self.__envlist.get('weight','default')
         
         self.__last_weight_name = self.__envlist.get('weight_name','last.pt')

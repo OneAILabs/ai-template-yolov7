@@ -474,6 +474,10 @@ def train(hyp, opt, device, tb_writer=None):
 
                 # Save last, best and delete
                 torch.save(ckpt, last)
+                if(final_epoch):
+                    if rank in [-1, 0]:
+                        if(support_mlflow()):
+                            log_model(ckpt['model'], opt, epoch, fi, best_model=False)
                 if best_fitness == fi:
                     torch.save(ckpt, best)
                     # oneAI

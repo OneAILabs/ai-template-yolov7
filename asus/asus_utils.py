@@ -21,9 +21,14 @@ def log_parameters(hyp, opt):
         mlflow.log_param(key, value)
 
 def log_model(model, opt, epoch, fitness_score, best_model=False):
-    mlflow.pytorch.log_model(model, artifact_path="last.pt")
     if best_model:
         mlflow.pytorch.log_model(model, artifact_path="best.pt")
+        mlflow.log_artifact("/temp/data.yaml",artifact_path="best.pt/data/yolov7")
+        mlflow.log_artifact("/output/yolov7/weights/best.pt",artifact_path="best.pt/data/yolov7/weights")
+    else:
+        mlflow.pytorch.log_model(model, artifact_path="last.pt")
+        mlflow.log_artifact("/temp/data.yaml",artifact_path="last.pt/data/yolov7")
+        mlflow.log_artifact("/output/yolov7/weights/last.pt",artifact_path="last.pt/data/yolov7/weights") 
     # mlflow.pytorch.log_model(model, artifact_path=f"epoch{epoch+1}.pt")
     print("The model is logged at:\n%s" % (os.path.join(mlflow.get_artifact_uri(), "last.pt")))
     print("Saving model artifact on epoch ", epoch + 1)

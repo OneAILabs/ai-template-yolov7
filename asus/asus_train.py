@@ -17,6 +17,7 @@ YOLO_DATA_BASEPATH = "/yolov7/data/"
 YOLO_WEIGHT_BASEPATH = "/weight/"
 YOLO_TEMP_BASEPATH = "/temp/"
 YOLO_DATASET_TEMP_BASEPATH = "/datasetTemp/"
+USER_TEMP_DATA_NAME = "user_data.yaml"
 
 DEFAULT_DATA_NAME = "data.yaml"
 YOLOV7_TRAIN_NAMES = 'yolov7'
@@ -51,7 +52,7 @@ class Train():
 
         self.__user_weight_path = self.__envlist.get('weight','default')
         self.__user_hyp_path = self.__envlist.get('hyp_yaml','default')
-        self.__user_data_path = self.__envlist.get('data_yaml','default')
+        self.__user_data_path = os.path.join(YOLO_TEMP_BASEPATH,USER_TEMP_DATA_NAME)
         self.__user_cfg_path = self.__envlist.get('cfg_yaml','default')
 
         self.__dataset_handler = DatasetHandler()
@@ -220,17 +221,48 @@ class Train():
             except yaml.YAMLError as exc:
                 print(exc)
 
+    def __handle_data_yaml(self,cvat_data,user_data):
+
+        if(os.path.exists(cvat_data)):
+            data_path = []
+            if isinstance(user_data, list):
+                user_data.append(cvat_data)
+                data_path = user_data
+
+            else:
+                data_path = [user_data,cvat_data]
+        else:
+            data_path = user_data
+        if(self.__debug):
+            print("Handle DATA_YAML:{}".format(data_path))
+        return data_path
+
+
     def __overwrite_data(self):
         with open(self.__src_data, 'r') as stream:
             try:
                 loaded = yaml.load(stream,Loader=yaml.SafeLoader)
             except yaml.YAMLError as exc:
                 print(exc)
+        if(os.path.exists(self.__user_data_path)):
+            with open(self.__user_data_path, 'r') as stream:
+                try:
+                    user_loaded = yaml.load(stream,Loader=yaml.SafeLoader)
+                except yaml.YAMLError as exc:
+                    print(exc)
+            if user_loaded.get("train") is not None:
+                loaded['train'] = self.__handle_data_yaml(self.__trainfile_path,user_loaded.get("train"))
+            if user_loaded.get("val") is not None:
+                loaded['val'] = self.__handle_data_yaml(self.__vaildfile_path,user_loaded.get("val"))
+            if user_loaded.get("test") is not None:
+                loaded['test'] = self.__handle_data_yaml(self.__testfile_path,user_loaded.get("test"))
+
+        else:
+            loaded['train'] = self.__trainfile_path
+            loaded['val'] = self.__vaildfile_path
+            if(os.path.exists(self.__testfile_path)):
+                loaded['test'] = self.__testfile_path
         loaded['nc'] = self.__classes
-        loaded['train'] = self.__trainfile_path
-        loaded['val'] = self.__vaildfile_path
-        if(os.path.exists(self.__testfile_path)):
-            loaded['test'] = self.__testfile_path
         loaded['names'] = self.__labels
         # Save it again
         with open(self.__target_data, 'w') as stream:
@@ -427,14 +459,16 @@ class Train():
             self.__copy_data_yaml()
             self.__copy_cfg_yaml()
             self.__copy_file_list()
-            if(os.path.exists(self.__testfile_path)):
-                self.test()
-
+            if(os.path.exists(self.__target_data)):
+                with open(self.__target_data, 'r') as stream:
+                    try:
+                        loaded = yaml.load(stream,Loader=yaml.SafeLoader)
+                    except yaml.YAMLError as exc:
+                        print(exc)
+                if loaded.get("test") is not None:
+                    self.test()
         else:
             sys.exit(retcode)
-
-
-
 
 if __name__ == '__main__':
     print("[AIM-Train] start yolov7",flush=True)
